@@ -228,7 +228,6 @@ export class ChatCompletion {
       userPrompt,
       ...processedInputContext.messages,
     ]);
-    // await this.hs.appendMessages(sessionId, systemMessageName, [newMessage]);
     const newSession = await this.hs.getSession(sessionId, systemMessageName);
 
     const jobKey = sanitizeAndValidateRedisKey(
@@ -259,7 +258,7 @@ export class ChatCompletion {
   }> {
     let session = await this.hs.getSession(sessionId, systemMessageName);
 
-    if (!(session.messages[session.messages.length - 1].author === 'user')) {
+    if (session.messages[session.messages.length - 1].author !== 'user') {
       throw new Error(
         `Last message in history is not "user" or "function" role,
         callRetry() is not recommended to use in this case.
@@ -349,7 +348,7 @@ export class ChatCompletion {
     job: Job<{ session: SessionProps }>,
   ) {
     let session = new Session(this.hs, job.data.session);
-    const { sessionId, systemMessageName, messages, modelPreset } = session;
+    const { sessionId, systemMessageName } = session;
     const logPrefix = `sessionId: ${sessionId}, systemMessageName: ${systemMessageName} -`;
     l.info(`${logPrefix} getting chat completion initiator name...`);
     let initiator = this.getChatCompletionInitiatorName(job.name);
@@ -423,7 +422,7 @@ export class ChatCompletion {
         session.lastError = JSON.stringify(error);
         await session.save();
 
-        await this.errorHandler(error, { initiator, session });
+        this.errorHandler(error, { initiator, session });
       }
       throw error;
     }
@@ -486,15 +485,49 @@ export class ChatCompletion {
     }
   };
 
+  private async appendMessageToHistoryStorage(
+    logPrefix: string,
+    sessionId: string,
+    systemMessageName: string,
+    processedMessages: Message[],
+    session: Session,
+    InputContext?: Record<string, unknown> | undefined,
+  ) {
+    l.info(
+      `${logPrefix} message accumulator exists, appending messages to accumulator...`,
+    );
+    await this.hs.appendMessagesToAccumulator(
+      sessionId,
+      systemMessageName,
+      processedMessages,
+      session,
+      InputContext,
+    );
+    l.info(`${logPrefix} messages appended to accumulator`);
+    if (session.lastError !== null) {
+      l.error(
+        `${logPrefix} session lastError exists, calling error handler...
+        You must handle this error in your error handler.
+        And call ChatCompletion.callRetry() to continue chat flow.
+        In other case, chat flow will be interrupted.
+        And all new messages will be saved to session.messageAccumulator until ChatCompletion.callRetry() will be successfully finished.
+        And after that, all messages from session.messageAccumulator will be added to session.messages and chat flow will be continued.`,
+      );
+      this.errorHandler(session.lastError, {
+        session,
+        initiator: ChatCompletionCallInitiator.main_flow,
+      });
+      l.info(`${logPrefix} error handler called, job finished.`);
+    }
+  }
+
   private async chatCompletionBeginProcessor(job: Job<ChatInputPayload>) {
     const { systemMessageName, sessionId } = job.data;
     const logPrefix = `sessionId: ${sessionId}, systemMessageName: ${systemMessageName} -`;
     try {
       l.info(`${logPrefix} begin processing input middlewares`);
       const { messages: processedMessages, ctx: InputContext } =
-        await this.llmIOManager.executeInputMiddlewareChain(
-          job.data as ChatInputPayload,
-        );
+        await this.llmIOManager.executeInputMiddlewareChain(job.data);
       l.info(`${logPrefix} end processing input middlewares`);
       l.info(`${logPrefix} checking session exists...`);
       if (await this.hs.isExists(sessionId, systemMessageName)) {
@@ -504,33 +537,14 @@ export class ChatCompletion {
           `${logPrefix} session exists, checking if message accumulator exists...`,
         );
         if (session.messageAccumulator !== null || session.lastError !== null) {
-          l.info(
-            `${logPrefix} message accumulator exists, appending messages to accumulator...`,
-          );
-          await this.hs.appendMessagesToAccumulator(
+          await this.appendMessageToHistoryStorage(
+            logPrefix,
             sessionId,
             systemMessageName,
             processedMessages,
             session,
             InputContext,
           );
-          l.info(`${logPrefix} messages appended to accumulator`);
-          if (session.lastError !== null) {
-            l.error(
-              `${logPrefix} session lastError exists, calling error handler...
-              You must handle this error in your error handler.
-              And call ChatCompletion.callRetry() to continue chat flow.
-              In other case, chat flow will be interrupted.
-              And all new messages will be saved to session.messageAccumulator until ChatCompletion.callRetry() will be successfully finished.
-              And after that, all messages from session.messageAccumulator will be added to session.messages and chat flow will be continued.`,
-            );
-            await this.errorHandler(session.lastError, {
-              session,
-              initiator: ChatCompletionCallInitiator.main_flow,
-            });
-            l.info(`${logPrefix} error handler called, job finished.`);
-          }
-
           return;
         } else {
           l.info(
@@ -595,12 +609,12 @@ export class ChatCompletion {
           );
           session.lastError = JSON.stringify(error);
           await session.save();
-          await this.errorHandler(error, {
+          this.errorHandler(error, {
             session,
             initiator: ChatCompletionCallInitiator.main_flow,
           });
         } else {
-          await this.errorHandler(error, {
+          this.errorHandler(error, {
             initiator: ChatCompletionCallInitiator.main_flow,
             sessionId: job.data.sessionId,
             systemMessageName: job.data.systemMessageName,

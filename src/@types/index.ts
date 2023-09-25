@@ -125,9 +125,9 @@ export type ErrorProperties =
   | undefined;
 
 export type ErrorHandler = (
-  error: Error | unknown,
+  error: Error | any,
   response?: ErrorProperties,
-) => Promise<void>;
+) => void;
 
 // ========================================================================
 import { protos } from '@google-ai/generativelanguage';
