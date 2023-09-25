@@ -65,7 +65,7 @@ export class ChatCompletion {
       {
         connection,
         autorun: false,
-        lockDuration: this.cfg.jobsLockDuration || 60000, // 1 minute by default
+        lockDuration: this.cfg.jobsLockDuration ?? 60000, // 1 minute by default
       },
     );
 
@@ -86,7 +86,7 @@ export class ChatCompletion {
         concurrency: this.cfg.llmRateLimiter.concurrency,
         connection,
         autorun: false,
-        lockDuration: this.cfg.jobsLockDuration || 60000, // 1 minute by default
+        lockDuration: this.cfg.jobsLockDuration ?? 60000, // 1 minute by default
       },
     );
 
@@ -564,8 +564,7 @@ export class ChatCompletion {
 
         await this.hs.createSession(
           sessionId,
-          systemMessageName,
-          systemMessage,
+          { name: systemMessageName, value: systemMessage },
           model,
           modelPreset,
           examples,

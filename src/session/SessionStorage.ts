@@ -39,8 +39,10 @@ export class SessionStorage {
 
   async createSession(
     sessionId: string,
-    systemMessageName: string,
-    systemMessage: string,
+    systemMessage: {
+      name: string;
+      value: string;
+    },
     model: string,
     modelPreset: SessionProps['modelPreset'],
     examples: SessionProps['examples'],
@@ -49,7 +51,7 @@ export class SessionStorage {
   ): Promise<void> {
     const sessionKey = this.getChatCompletionSessionKey(
       sessionId,
-      systemMessageName,
+      systemMessage.name,
     );
     l.info(`Create session by key: ${sessionKey}`);
     const timestamp = getTimestamp();
@@ -61,8 +63,8 @@ export class SessionStorage {
 
     const session = new Session(this, {
       sessionId,
-      systemMessageName,
-      systemMessage,
+      systemMessageName: systemMessage.name,
+      systemMessage: systemMessage.value,
       model,
       modelPreset,
       messages: messages as ChatHistory,
@@ -72,7 +74,7 @@ export class SessionStorage {
         assistant: null,
       },
       handlersCount: {},
-      ctx: ctx || {},
+      ctx: ctx ?? {},
       messageAccumulator: [],
       createdAt: timestamp,
       updatedAt: timestamp,

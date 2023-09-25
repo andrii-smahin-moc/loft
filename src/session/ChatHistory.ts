@@ -35,7 +35,7 @@ export class ChatHistory extends QueryByArrayOfObjects<Message> {
       throw new Error(`Message with id "${id}" not found`);
     }
 
-    this[index] = new Message(Object.assign({}, this[index], newData));
+    this[index] = new Message({ ...this[index], ...newData });
   }
 
   archiveById(id: string): void {
@@ -70,7 +70,7 @@ export class ChatHistory extends QueryByArrayOfObjects<Message> {
     this[index] = message;
   }
 
-  replaceAll(messages: Message[]): ChatHistory {
+  replaceAll(messages: Message[]): this {
     this[l].info(`replace all messages`);
     this.length = 0;
     this.push(...messages);

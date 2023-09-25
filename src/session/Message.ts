@@ -33,15 +33,15 @@ export class Message implements Omit<PalmMessage, 'author'> {
   }) {
     const timestamp = getTimestamp();
 
-    this.id = msg.id || uuid();
-    this.author = msg.author || 'user';
+    this.id = msg.id ?? uuid();
+    this.author = msg.author ?? 'user';
     this.content = msg.content;
     this.name = msg.name;
-    this.tags = msg.tags || [];
-    this.customProperties = msg.customProperties || {};
-    this.isArchived = msg.isArchived || false;
-    this.createdAt = msg.createdAt || timestamp;
-    this.updatedAt = msg.updatedAt || timestamp;
+    this.tags = msg.tags ?? [];
+    this.customProperties = msg.customProperties ?? {};
+    this.isArchived = msg.isArchived ?? false;
+    this.createdAt = msg.createdAt ?? timestamp;
+    this.updatedAt = msg.updatedAt ?? timestamp;
   }
 
   toJSON(): Partial<Message> {

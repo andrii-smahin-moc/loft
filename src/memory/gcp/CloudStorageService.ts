@@ -29,10 +29,7 @@ export class CloudStorageService implements IStorageService {
       const [data] = await file.download();
       return data;
     } catch (err) {
-      // if (err.code === 404) {
-      //   l.warn(`File ${filename} not found!`);
-      //   return null;
-      // }
+      l.warn(`File ${filename} not found!`);
       throw err;
     }
   }

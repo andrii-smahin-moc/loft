@@ -2,7 +2,6 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
-  PutBucketLifecycleConfigurationCommand,
   S3ServiceException,
 } from '@aws-sdk/client-s3';
 import {

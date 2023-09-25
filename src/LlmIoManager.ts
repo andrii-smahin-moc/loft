@@ -131,7 +131,7 @@ export class LlmIOManager {
 
           middlewareStatuses.push({
             name,
-            status: status || MiddlewareStatus.NOT_RETURNED,
+            status: status ?? MiddlewareStatus.NOT_RETURNED,
           });
 
           if (

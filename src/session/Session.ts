@@ -51,7 +51,7 @@ export class Session implements SessionProps {
     this.lastMessageByRole = sessionData.lastMessageByRole;
     this.handlersCount = sessionData.handlersCount;
     this.ctx = sessionData.ctx;
-    this.messageAccumulator = sessionData.messageAccumulator || null;
+    this.messageAccumulator = sessionData.messageAccumulator ?? null;
     this.createdAt = sessionData.createdAt;
     this.updatedAt = sessionData.updatedAt;
     this.lastError = sessionData.lastError;

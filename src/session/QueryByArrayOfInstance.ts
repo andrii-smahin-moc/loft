@@ -47,7 +47,7 @@ export abstract class QueryByArrayOfObjects<T> extends Array<T> {
       '$not' in query
     ) {
       const operator = Object.keys(query)[0] as keyof LogicalQuery<T>;
-      const values = (query as LogicalQuery<T>)[operator];
+      const values = query[operator];
       if (!values) return true;
       switch (operator) {
         case '$and':

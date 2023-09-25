@@ -3,16 +3,6 @@ import { Metadata, Prediction, PredictionResponse } from './@types/response';
 import { PredictionInstance, PredictionParameters } from './@types/request';
 import { cleanObject } from '../../helpers';
 
-// const palm = new Palm('gcp-project-name', 'model-name');
-//   const instance: PredictionInstance = {
-//     context: 'My name is Miles. You are an astronomer, knowledgeable about the solar system.',
-//     examples: [
-//       { input: { content: 'How many moons does Mars have?' }, output: { content: 'The planet Mars has two moons, Phobos and Deimos.' } }
-//     ],
-//     messages: [
-//       { author: 'user', content: 'How many planets are there in the solar system?' }
-//     ]
-//   };
 export class Palm {
   private predictionServiceClient: PredictionServiceClient;
 

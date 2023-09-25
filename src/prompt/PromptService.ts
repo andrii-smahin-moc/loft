@@ -1,4 +1,4 @@
-import { PromptComputer, PromptComputers, SessionProps } from '../@types';
+import { PromptComputer, PromptComputers } from '../@types';
 import { PromptType } from '../schema/PromptSchema';
 import { PromptStorage } from './PromptStorage';
 import { getLogger } from './../Logger';

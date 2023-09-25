@@ -1,13 +1,12 @@
 import { DateTime } from 'luxon';
 import { OutputContext } from './@types';
-export const redisKeyRegex = /^[a-zA-Z0-9:_\.-]*$/;
+export const redisKeyRegex = /^[a-zA-Z0-9:_.-]*$/;
 
 export function getTimestamp() {
   return DateTime.local().toUTC().toSeconds();
 }
 
-type SanitizeRedisKey = string;
-export function sanitizeAndValidateRedisKey(key: string): SanitizeRedisKey {
+export function sanitizeAndValidateRedisKey(key: string): string {
   // Regular expression to test key
   // This expression will allow alphanumeric characters (a-z, A-Z, 0-9) and the specified symbols (: . - _)
   const sanitizedKey = key.replace(/[\n\r\t\b]/g, '');
